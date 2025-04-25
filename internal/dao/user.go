@@ -3,11 +3,13 @@ package dao
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"golang.org/x/sync/singleflight"
 	"gorm.io/gorm"
 
+	cacheBase "github.com/go-dev-frame/sponge/pkg/cache"
 	"github.com/go-dev-frame/sponge/pkg/logger"
 	"github.com/go-dev-frame/sponge/pkg/sgorm/query"
 	"github.com/go-dev-frame/sponge/pkg/utils"
@@ -35,6 +37,8 @@ type UserDao interface {
 	CreateByTx(ctx context.Context, tx *gorm.DB, table *model.User) (uint64, error)
 	DeleteByTx(ctx context.Context, tx *gorm.DB, id uint64) error
 	UpdateByTx(ctx context.Context, tx *gorm.DB, table *model.User) error
+
+	GetByUsername(ctx context.Context, username string) (*model.User, error)
 }
 
 type userDao struct {
@@ -397,4 +401,50 @@ func (d *userDao) UpdateByTx(ctx context.Context, tx *gorm.DB, table *model.User
 	_ = d.deleteCache(ctx, table.ID)
 
 	return err
+}
+
+// GetByUsername get a record by username
+func (d *userDao) GetByUsername(ctx context.Context, username string) (*model.User, error) {
+	record, err := d.cache.GetByUsername(ctx, username)
+	if err == nil {
+		return record, nil
+	}
+
+	if errors.Is(err, cacheBase.CacheNotFound) {
+		// for the same id, prevent high concurrent simultaneous access to mysql
+		val, err, _ := d.sfg.Do(username, func() (interface{}, error) { // nolint
+			table := &model.User{}
+			err = d.db.WithContext(ctx).Where("username = ?", username).First(table).Error
+			if err != nil {
+				// if data is empty, set not found cache to prevent cache penetration, default expiration time 10 minutes
+				if errors.Is(err, database.ErrRecordNotFound) {
+					err = d.cache.SetUsernamePlaceholder(ctx, username)
+					if err != nil {
+						return nil, err
+					}
+					return nil, database.ErrRecordNotFound
+				}
+				return nil, err
+			}
+			// set cache
+			err = d.cache.SetByUsername(ctx, username, table, 10*time.Minute)
+			if err != nil {
+				return nil, fmt.Errorf("cache.Set error: %v, username=%s", err, username)
+			}
+			return table, nil
+		})
+		if err != nil {
+			return nil, err
+		}
+		table, ok := val.(*model.User)
+		if !ok {
+			return nil, database.ErrRecordNotFound
+		}
+		return table, nil
+	} else if d.cache.IsPlaceholderErr(err) {
+		return nil, database.ErrRecordNotFound
+	}
+
+	// fail fast, if cache error return, don't request to db
+	return nil, err
 }
