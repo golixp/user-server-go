@@ -1,0 +1,463 @@
+definitions:
+  types.Column:
+    properties:
+      exp:
+        description: expressions, which default to = when the value is null, have
+          =, !=, >, >=, <, <=, like
+        type: string
+      logic:
+        description: logical type, default value is "and", support &, and, ||, or
+        type: string
+      name:
+        description: column name
+        type: string
+      value:
+        description: column value
+    type: object
+  types.Conditions:
+    properties:
+      columns:
+        description: columns info
+        items:
+          $ref: '#/definitions/types.Column'
+        type: array
+    type: object
+  types.CreateUserReply:
+    properties:
+      code:
+        description: return code
+        type: integer
+      data:
+        description: return data
+        properties:
+          id:
+            description: id
+            type: integer
+        type: object
+      msg:
+        description: return information description
+        type: string
+    type: object
+  types.CreateUserRequest:
+    properties:
+      loginAt:
+        type: string
+      loginIP:
+        type: string
+      nickname:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  types.DeleteUserByIDReply:
+    properties:
+      code:
+        description: return code
+        type: integer
+      data:
+        description: return data
+      msg:
+        description: return information description
+        type: string
+    type: object
+  types.DeleteUsersByIDsReply:
+    properties:
+      code:
+        description: return code
+        type: integer
+      data:
+        description: return data
+      msg:
+        description: return information description
+        type: string
+    type: object
+  types.DeleteUsersByIDsRequest:
+    properties:
+      ids:
+        description: id list
+        items:
+          type: integer
+        minItems: 1
+        type: array
+    type: object
+  types.GetUserByConditionReply:
+    properties:
+      code:
+        description: return code
+        type: integer
+      data:
+        description: return data
+        properties:
+          user:
+            $ref: '#/definitions/types.UserObjDetail'
+        type: object
+      msg:
+        description: return information description
+        type: string
+    type: object
+  types.GetUserByIDReply:
+    properties:
+      code:
+        description: return code
+        type: integer
+      data:
+        description: return data
+        properties:
+          user:
+            $ref: '#/definitions/types.UserObjDetail'
+        type: object
+      msg:
+        description: return information description
+        type: string
+    type: object
+  types.ListUsersByIDsReply:
+    properties:
+      code:
+        description: return code
+        type: integer
+      data:
+        description: return data
+        properties:
+          users:
+            items:
+              $ref: '#/definitions/types.UserObjDetail'
+            type: array
+        type: object
+      msg:
+        description: return information description
+        type: string
+    type: object
+  types.ListUsersByIDsRequest:
+    properties:
+      ids:
+        description: id list
+        items:
+          type: integer
+        minItems: 1
+        type: array
+    type: object
+  types.ListUsersReply:
+    properties:
+      code:
+        description: return code
+        type: integer
+      data:
+        description: return data
+        properties:
+          users:
+            items:
+              $ref: '#/definitions/types.UserObjDetail'
+            type: array
+        type: object
+      msg:
+        description: return information description
+        type: string
+    type: object
+  types.Params:
+    properties:
+      columns:
+        description: query conditions
+        items:
+          $ref: '#/definitions/types.Column'
+        type: array
+      limit:
+        description: lines per page
+        type: integer
+      page:
+        description: page number, starting from page 0
+        type: integer
+      sort:
+        description: sorted fields, multi-column sorting separated by commas
+        type: string
+    type: object
+  types.UpdateUserByIDReply:
+    properties:
+      code:
+        description: return code
+        type: integer
+      data:
+        description: return data
+      msg:
+        description: return information description
+        type: string
+    type: object
+  types.UpdateUserByIDRequest:
+    properties:
+      id:
+        description: uint64 id
+        type: integer
+      loginAt:
+        type: string
+      loginIP:
+        type: string
+      nickname:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  types.UserObjDetail:
+    properties:
+      createdAt:
+        type: string
+      id:
+        description: convert to uint64 id
+        type: integer
+      loginAt:
+        type: string
+      loginIP:
+        type: string
+      nickname:
+        type: string
+      password:
+        type: string
+      updatedAt:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: http server api docs
+  title: user_server_go api docs
+  version: "2.0"
+paths:
+  /api/v1/user:
+    post:
+      consumes:
+      - application/json
+      description: submit information to create user
+      parameters:
+      - description: user information
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/types.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.CreateUserReply'
+      security:
+      - BearerAuth: []
+      summary: create user
+      tags:
+      - user
+  /api/v1/user/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete user by id
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.DeleteUserByIDReply'
+      security:
+      - BearerAuth: []
+      summary: delete user
+      tags:
+      - user
+    get:
+      consumes:
+      - application/json
+      description: get user detail by id
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.GetUserByIDReply'
+      security:
+      - BearerAuth: []
+      summary: get user detail
+      tags:
+      - user
+    put:
+      consumes:
+      - application/json
+      description: update user information by id
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: user information
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/types.UpdateUserByIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.UpdateUserByIDReply'
+      security:
+      - BearerAuth: []
+      summary: update user
+      tags:
+      - user
+  /api/v1/user/condition:
+    post:
+      consumes:
+      - application/json
+      description: get user by condition
+      parameters:
+      - description: query condition
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/types.Conditions'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.GetUserByConditionReply'
+      security:
+      - BearerAuth: []
+      summary: get user by condition
+      tags:
+      - user
+  /api/v1/user/delete/ids:
+    post:
+      consumes:
+      - application/json
+      description: delete users by batch id
+      parameters:
+      - description: id array
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/types.DeleteUsersByIDsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.DeleteUsersByIDsReply'
+      security:
+      - BearerAuth: []
+      summary: delete users
+      tags:
+      - user
+  /api/v1/user/list:
+    get:
+      consumes:
+      - application/json
+      description: list of users by last id and limit
+      parameters:
+      - default: 0
+        description: last id, default is MaxInt32
+        in: query
+        name: lastID
+        type: integer
+      - default: 10
+        description: number per page
+        in: query
+        name: limit
+        type: integer
+      - default: -id
+        description: 'sort by column name of table, and the '
+        in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.ListUsersReply'
+      security:
+      - BearerAuth: []
+      summary: list of users by last id and limit
+      tags:
+      - user
+    post:
+      consumes:
+      - application/json
+      description: list of users by paging and conditions
+      parameters:
+      - description: query parameters
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/types.Params'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.ListUsersReply'
+      security:
+      - BearerAuth: []
+      summary: list of users by query parameters
+      tags:
+      - user
+  /api/v1/user/list/ids:
+    post:
+      consumes:
+      - application/json
+      description: list of users by batch id
+      parameters:
+      - description: id array
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/types.ListUsersByIDsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.ListUsersByIDsReply'
+      security:
+      - BearerAuth: []
+      summary: list of users by batch id
+      tags:
+      - user
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    description: Type Bearer your-jwt-token to Value
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

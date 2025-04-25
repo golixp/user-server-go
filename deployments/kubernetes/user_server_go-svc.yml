@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-server-go-svc
+  namespace: user-server-go
+spec:
+  selector:
+    app: user-server-go
+  type: ClusterIP
+  ports:
+    - name: user-server-go-svc-http-port
+      port: 8080
+      targetPort: 8080
+

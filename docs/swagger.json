@@ -1,0 +1,707 @@
+{
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "http server api docs",
+        "title": "user_server_go api docs",
+        "contact": {},
+        "version": "2.0"
+    },
+    "host": "localhost:8080",
+    "paths": {
+        "/api/v1/user": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "submit information to create user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "create user",
+                "parameters": [
+                    {
+                        "description": "user information",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.CreateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.CreateUserReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user/condition": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "get user by condition",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "get user by condition",
+                "parameters": [
+                    {
+                        "description": "query condition",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.Conditions"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.GetUserByConditionReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user/delete/ids": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "delete users by batch id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "delete users",
+                "parameters": [
+                    {
+                        "description": "id array",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.DeleteUsersByIDsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.DeleteUsersByIDsReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user/list": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "list of users by last id and limit",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "list of users by last id and limit",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "last id, default is MaxInt32",
+                        "name": "lastID",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "number per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "-id",
+                        "description": "sort by column name of table, and the ",
+                        "name": "sort",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.ListUsersReply"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "list of users by paging and conditions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "list of users by query parameters",
+                "parameters": [
+                    {
+                        "description": "query parameters",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.Params"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.ListUsersReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user/list/ids": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "list of users by batch id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "list of users by batch id",
+                "parameters": [
+                    {
+                        "description": "id array",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.ListUsersByIDsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.ListUsersByIDsReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "get user detail by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "get user detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.GetUserByIDReply"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "update user information by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "update user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "user information",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.UpdateUserByIDRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.UpdateUserByIDReply"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "delete user by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "delete user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.DeleteUserByIDReply"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "types.Column": {
+            "type": "object",
+            "properties": {
+                "exp": {
+                    "description": "expressions, which default to = when the value is null, have =, !=, \u003e, \u003e=, \u003c, \u003c=, like",
+                    "type": "string"
+                },
+                "logic": {
+                    "description": "logical type, default value is \"and\", support \u0026, and, ||, or",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "column name",
+                    "type": "string"
+                },
+                "value": {
+                    "description": "column value"
+                }
+            }
+        },
+        "types.Conditions": {
+            "type": "object",
+            "properties": {
+                "columns": {
+                    "description": "columns info",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.Column"
+                    }
+                }
+            }
+        },
+        "types.CreateUserReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "return code",
+                    "type": "integer"
+                },
+                "data": {
+                    "description": "return data",
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "description": "id",
+                            "type": "integer"
+                        }
+                    }
+                },
+                "msg": {
+                    "description": "return information description",
+                    "type": "string"
+                }
+            }
+        },
+        "types.CreateUserRequest": {
+            "type": "object",
+            "properties": {
+                "loginAt": {
+                    "type": "string"
+                },
+                "loginIP": {
+                    "type": "string"
+                },
+                "nickname": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.DeleteUserByIDReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "return code",
+                    "type": "integer"
+                },
+                "data": {
+                    "description": "return data"
+                },
+                "msg": {
+                    "description": "return information description",
+                    "type": "string"
+                }
+            }
+        },
+        "types.DeleteUsersByIDsReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "return code",
+                    "type": "integer"
+                },
+                "data": {
+                    "description": "return data"
+                },
+                "msg": {
+                    "description": "return information description",
+                    "type": "string"
+                }
+            }
+        },
+        "types.DeleteUsersByIDsRequest": {
+            "type": "object",
+            "properties": {
+                "ids": {
+                    "description": "id list",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "types.GetUserByConditionReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "return code",
+                    "type": "integer"
+                },
+                "data": {
+                    "description": "return data",
+                    "type": "object",
+                    "properties": {
+                        "user": {
+                            "$ref": "#/definitions/types.UserObjDetail"
+                        }
+                    }
+                },
+                "msg": {
+                    "description": "return information description",
+                    "type": "string"
+                }
+            }
+        },
+        "types.GetUserByIDReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "return code",
+                    "type": "integer"
+                },
+                "data": {
+                    "description": "return data",
+                    "type": "object",
+                    "properties": {
+                        "user": {
+                            "$ref": "#/definitions/types.UserObjDetail"
+                        }
+                    }
+                },
+                "msg": {
+                    "description": "return information description",
+                    "type": "string"
+                }
+            }
+        },
+        "types.ListUsersByIDsReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "return code",
+                    "type": "integer"
+                },
+                "data": {
+                    "description": "return data",
+                    "type": "object",
+                    "properties": {
+                        "users": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/types.UserObjDetail"
+                            }
+                        }
+                    }
+                },
+                "msg": {
+                    "description": "return information description",
+                    "type": "string"
+                }
+            }
+        },
+        "types.ListUsersByIDsRequest": {
+            "type": "object",
+            "properties": {
+                "ids": {
+                    "description": "id list",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "types.ListUsersReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "return code",
+                    "type": "integer"
+                },
+                "data": {
+                    "description": "return data",
+                    "type": "object",
+                    "properties": {
+                        "users": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/types.UserObjDetail"
+                            }
+                        }
+                    }
+                },
+                "msg": {
+                    "description": "return information description",
+                    "type": "string"
+                }
+            }
+        },
+        "types.Params": {
+            "type": "object",
+            "properties": {
+                "columns": {
+                    "description": "query conditions",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.Column"
+                    }
+                },
+                "limit": {
+                    "description": "lines per page",
+                    "type": "integer"
+                },
+                "page": {
+                    "description": "page number, starting from page 0",
+                    "type": "integer"
+                },
+                "sort": {
+                    "description": "sorted fields, multi-column sorting separated by commas",
+                    "type": "string"
+                }
+            }
+        },
+        "types.UpdateUserByIDReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "return code",
+                    "type": "integer"
+                },
+                "data": {
+                    "description": "return data"
+                },
+                "msg": {
+                    "description": "return information description",
+                    "type": "string"
+                }
+            }
+        },
+        "types.UpdateUserByIDRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "uint64 id",
+                    "type": "integer"
+                },
+                "loginAt": {
+                    "type": "string"
+                },
+                "loginIP": {
+                    "type": "string"
+                },
+                "nickname": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.UserObjDetail": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "convert to uint64 id",
+                    "type": "integer"
+                },
+                "loginAt": {
+                    "type": "string"
+                },
+                "loginIP": {
+                    "type": "string"
+                },
+                "nickname": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Type Bearer your-jwt-token to Value",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}
