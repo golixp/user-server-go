@@ -9,3 +9,9 @@ CREATE TABLE user (
 	updated_at datetime NULL,
 	deleted_at datetime NULL
 );
+
+create index user_username_index
+    on user (username);
+
+create index user_info_deleted_at_index
+    on user (deleted_at);
