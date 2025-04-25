@@ -32,6 +32,11 @@ type UserCache interface {
 	Del(ctx context.Context, id uint64) error
 	SetPlaceholder(ctx context.Context, id uint64) error
 	IsPlaceholderErr(err error) bool
+
+	SetByUsername(ctx context.Context, email string, data *model.User, duration time.Duration) error
+	GetByUsername(ctx context.Context, email string) (*model.User, error)
+	DelByUsername(ctx context.Context, email string) error
+	SetUsernamePlaceholder(ctx context.Context, email string) error
 }
 
 // userCache define a cache struct
@@ -150,4 +155,45 @@ func (c *userCache) SetPlaceholder(ctx context.Context, id uint64) error {
 // IsPlaceholderErr check if cache is placeholder error
 func (c *userCache) IsPlaceholderErr(err error) bool {
 	return errors.Is(err, cache.ErrPlaceholder)
+}
+
+// Username cache key
+func (c *userCache) getUserUsernameCacheKey(username string) string {
+	return userCachePrefixKey + username
+}
+
+// SetByUsername write to cache
+func (c *userCache) SetByUsername(ctx context.Context, username string, data *model.User, duration time.Duration) error {
+	if data == nil || username == "" {
+		return nil
+	}
+	cacheKey := c.getUserUsernameCacheKey(username)
+	err := c.cache.Set(ctx, cacheKey, data, duration)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetByUsername cache value
+func (c *userCache) GetByUsername(ctx context.Context, username string) (*model.User, error) {
+	var data *model.User
+	cacheKey := c.getUserUsernameCacheKey(username)
+	err := c.cache.Get(ctx, cacheKey, &data)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+// DelByUsername delete cache
+func (c *userCache) DelByUsername(ctx context.Context, username string) error {
+	cacheKey := c.getUserUsernameCacheKey(username)
+	return c.cache.Del(ctx, cacheKey)
+}
+
+// SetUsernamePlaceholder set empty cache
+func (c *userCache) SetUsernamePlaceholder(ctx context.Context, username string) error {
+	cacheKey := c.getUserUsernameCacheKey(username)
+	return c.cache.SetCacheWithNotFound(ctx, cacheKey)
 }
