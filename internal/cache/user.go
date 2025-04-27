@@ -33,10 +33,10 @@ type UserCache interface {
 	SetPlaceholder(ctx context.Context, id uint64) error
 	IsPlaceholderErr(err error) bool
 
-	SetByUsername(ctx context.Context, email string, data *model.User, duration time.Duration) error
-	GetByUsername(ctx context.Context, email string) (*model.User, error)
-	DelByUsername(ctx context.Context, email string) error
-	SetUsernamePlaceholder(ctx context.Context, email string) error
+	SetByUsername(ctx context.Context, username string, data *model.User, duration time.Duration) error
+	GetByUsername(ctx context.Context, username string) (*model.User, error)
+	DelByUsername(ctx context.Context, username string) error
+	SetUsernamePlaceholder(ctx context.Context, username string) error
 }
 
 // userCache define a cache struct
