@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"math"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
@@ -18,6 +19,7 @@ import (
 	"user-server-go/internal/ecode"
 	"user-server-go/internal/model"
 	"user-server-go/internal/types"
+	"user-server-go/internal/util"
 )
 
 var _ UserHandler = (*userHandler)(nil)
@@ -50,7 +52,7 @@ func NewUserHandler() UserHandler {
 	}
 }
 
-// Create a record
+// 创建用户
 // @Summary create user
 // @Description submit information to create user
 // @Tags user
@@ -75,7 +77,19 @@ func (h *userHandler) Create(c *gin.Context) {
 		response.Error(c, ecode.ErrCreateUser)
 		return
 	}
-	// Note: if copier.Copy cannot assign a value to a field, add it here
+
+	// 赋值 LoginIP/LoginAt
+	user.LoginAt = time.Now()
+	user.LoginIP = c.ClientIP()
+
+	// 密码替换为加盐哈希
+	pwd, err := util.HashAndSaltPassword(user.Password)
+	if err != nil {
+		logger.Error("bcrypto.HashAndSaltPassword error", logger.Err(err), middleware.CtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+	user.Password = pwd
 
 	ctx := middleware.WrapCtx(c)
 	err = h.iDao.Create(ctx, user)

@@ -12,11 +12,9 @@ var _ time.Time
 
 // CreateUserRequest request params
 type CreateUserRequest struct {
-	Username string     `json:"username" binding:""`
-	Nickname string     `json:"nickname" binding:""`
-	Password string     `json:"password" binding:""`
-	LoginAt  *time.Time `json:"loginAt" binding:""`
-	LoginIP  string     `json:"loginIP" binding:""`
+	Username string `json:"username" binding:""`
+	Nickname string `json:"nickname" binding:""`
+	Password string `json:"password" binding:""`
 }
 
 // UpdateUserByIDRequest request params
