@@ -25,7 +25,7 @@ func userRouter(group *gin.RouterGroup, h handler.UserHandler) {
 	// /logout
 	// /password/:id
 
-	g.POST("/", h.Create)          // [post] /api/v1/user
+	g.POST("", h.Create)           // [post] /api/v1/user
 	g.DELETE("/:id", h.DeleteByID) // [delete] /api/v1/user/:id
 	g.PUT("/:id", h.UpdateByID)    // [put] /api/v1/user/:id
 	g.GET("/:id", h.GetByID)       // [get] /api/v1/user/:id
