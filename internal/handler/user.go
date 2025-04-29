@@ -13,13 +13,14 @@ import (
 	"github.com/go-dev-frame/sponge/pkg/logger"
 	"github.com/go-dev-frame/sponge/pkg/utils"
 
+	"user-server-go/pkg/password"
+
 	"user-server-go/internal/cache"
 	"user-server-go/internal/dao"
 	"user-server-go/internal/database"
 	"user-server-go/internal/ecode"
 	"user-server-go/internal/model"
 	"user-server-go/internal/types"
-	"user-server-go/internal/util"
 )
 
 var _ UserHandler = (*userHandler)(nil)
@@ -83,7 +84,7 @@ func (h *userHandler) Create(c *gin.Context) {
 	user.LoginIP = c.ClientIP()
 
 	// 密码替换为加盐哈希
-	pwd, err := util.HashAndSaltPassword(user.Password)
+	pwd, err := password.HashAndSaltPassword(user.Password)
 	if err != nil {
 		logger.Error("bcrypto.HashAndSaltPassword error", logger.Err(err), middleware.CtxRequestIDField(c))
 		response.Output(c, ecode.InternalServerError.ToHTTPCode())
