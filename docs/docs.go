@@ -436,12 +436,6 @@ const docTemplate = `{
         "types.CreateUserRequest": {
             "type": "object",
             "properties": {
-                "loginAt": {
-                    "type": "string"
-                },
-                "loginIP": {
-                    "type": "string"
-                },
                 "nickname": {
                     "type": "string"
                 },

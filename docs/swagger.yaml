@@ -40,10 +40,6 @@ definitions:
     type: object
   types.CreateUserRequest:
     properties:
-      loginAt:
-        type: string
-      loginIP:
-        type: string
       nickname:
         type: string
       password:
