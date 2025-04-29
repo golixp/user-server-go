@@ -14,6 +14,7 @@ require (
 	golang.org/x/crypto v0.35.0
 	golang.org/x/sync v0.11.0
 	gorm.io/gorm v1.25.5
+	github.com/bwmarrin/snowflake v0.3.0
 )
 
 require (

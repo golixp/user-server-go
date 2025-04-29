@@ -1,12 +1,11 @@
 package model
 
 import (
-	"github.com/go-dev-frame/sponge/pkg/sgorm"
 	"time"
 )
 
 type User struct {
-	sgorm.Model `gorm:"embedded"` // embed id and time
+	Model `gorm:"embedded"` // embed id and time
 
 	Username string    `gorm:"column:username;type:varchar(100);not null" json:"username"`
 	Nickname string    `gorm:"column:nickname;type:varchar(100);not null" json:"nickname"`
