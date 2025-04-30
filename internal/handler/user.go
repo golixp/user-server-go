@@ -114,7 +114,13 @@ func (h *userHandler) Create(c *gin.Context) {
 		return
 	}
 
-	response.Success(c, gin.H{"id": user.ID})
+	resp, err := convertUser(user)
+	if err != nil {
+		logger.Error("convertUser error", logger.Err(err), logger.Any("form", form), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+	response.Success(c, gin.H{"user": resp})
 }
 
 // DeleteByID delete a record by id
@@ -170,7 +176,6 @@ func (h *userHandler) UpdateByID(c *gin.Context) {
 		response.Error(c, ecode.InvalidParams)
 		return
 	}
-	form.ID = id
 
 	user := &model.User{}
 	err = copier.Copy(user, form)
@@ -178,7 +183,8 @@ func (h *userHandler) UpdateByID(c *gin.Context) {
 		response.Error(c, ecode.ErrUpdateByIDUser)
 		return
 	}
-	// Note: if copier.Copy cannot assign a value to a field, add it here
+
+	user.ID = id
 
 	ctx := middleware.WrapCtx(c)
 	err = h.iDao.UpdateByID(ctx, user)

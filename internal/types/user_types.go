@@ -19,22 +19,16 @@ type CreateUserRequest struct {
 
 // UpdateUserByIDRequest request params
 type UpdateUserByIDRequest struct {
-	ID uint64 `json:"id" binding:""` // uint64 id
-
-	Username string     `json:"username" binding:""`
-	Nickname string     `json:"nickname" binding:""`
-	Password string     `json:"password" binding:""`
-	LoginAt  *time.Time `json:"loginAt" binding:""`
-	LoginIP  string     `json:"loginIP" binding:""`
+	Username string `json:"username" binding:""`
+	Nickname string `json:"nickname" binding:""`
 }
 
 // UserObjDetail detail
 type UserObjDetail struct {
-	ID uint64 `json:"id"` // convert to uint64 id
+	ID uint64 `json:"id,string"` // convert to uint64 id
 
 	Username  string     `json:"username"`
 	Nickname  string     `json:"nickname"`
-	Password  string     `json:"password"`
 	LoginAt   *time.Time `json:"loginAt"`
 	LoginIP   string     `json:"loginIP"`
 	CreatedAt *time.Time `json:"createdAt"`

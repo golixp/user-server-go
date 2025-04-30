@@ -642,20 +642,7 @@ const docTemplate = `{
         "types.UpdateUserByIDRequest": {
             "type": "object",
             "properties": {
-                "id": {
-                    "description": "uint64 id",
-                    "type": "integer"
-                },
-                "loginAt": {
-                    "type": "string"
-                },
-                "loginIP": {
-                    "type": "string"
-                },
                 "nickname": {
-                    "type": "string"
-                },
-                "password": {
                     "type": "string"
                 },
                 "username": {
@@ -671,7 +658,8 @@ const docTemplate = `{
                 },
                 "id": {
                     "description": "convert to uint64 id",
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "loginAt": {
                     "type": "string"
@@ -680,9 +668,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "nickname": {
-                    "type": "string"
-                },
-                "password": {
                     "type": "string"
                 },
                 "updatedAt": {

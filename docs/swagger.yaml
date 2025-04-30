@@ -181,16 +181,7 @@ definitions:
     type: object
   types.UpdateUserByIDRequest:
     properties:
-      id:
-        description: uint64 id
-        type: integer
-      loginAt:
-        type: string
-      loginIP:
-        type: string
       nickname:
-        type: string
-      password:
         type: string
       username:
         type: string
@@ -201,14 +192,13 @@ definitions:
         type: string
       id:
         description: convert to uint64 id
-        type: integer
+        example: "0"
+        type: string
       loginAt:
         type: string
       loginIP:
         type: string
       nickname:
-        type: string
-      password:
         type: string
       updatedAt:
         type: string
