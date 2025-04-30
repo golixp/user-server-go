@@ -458,7 +458,7 @@ func (d *userDao) GetByUsername(ctx context.Context, username string) (*model.Us
 				return nil, err
 			}
 			// set cache
-			err = d.cache.SetByUsername(ctx, username, table, 10*time.Minute)
+			err = d.cache.SetByUsername(ctx, username, table, cache.UserExpireTime)
 			if err != nil {
 				logger.Warn("cache.SetByUsername error", logger.Err(err), logger.Any("username", username))
 			}
