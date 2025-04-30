@@ -4,6 +4,7 @@ go 1.24.2
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
+	github.com/bwmarrin/snowflake v0.3.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-dev-frame/sponge v1.13.1
 	github.com/jinzhu/copier v0.3.5
@@ -14,7 +15,6 @@ require (
 	golang.org/x/crypto v0.35.0
 	golang.org/x/sync v0.11.0
 	gorm.io/gorm v1.25.5
-	github.com/bwmarrin/snowflake v0.3.0
 )
 
 require (
