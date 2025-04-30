@@ -30,6 +30,7 @@ type UserHandler interface {
 	Create(c *gin.Context)
 	DeleteByID(c *gin.Context)
 	UpdateByID(c *gin.Context)
+	UpdatePassword(c *gin.Context)
 	GetByID(c *gin.Context)
 	List(c *gin.Context)
 
@@ -211,6 +212,62 @@ func (h *userHandler) UpdateByID(c *gin.Context) {
 	}
 
 	response.Success(c)
+}
+
+// UpdatePassword update information by id
+// @Summary update password
+// @Description update password information by id
+// @Tags user
+// @accept json
+// @Produce json
+// @Param id path string true "id"
+// @Param data body types.UpdatePasswordByIDRequest true "password information"
+// @Success 200 {object} types.UpdatePasswordByIDReply{}
+// @Router /api/v1/user/password/{id} [put]
+// @Security BearerAuth
+func (h *userHandler) UpdatePassword(c *gin.Context) {
+	_, id, isAbort := getUserIDFromPath(c)
+	if isAbort {
+		response.Error(c, ecode.InvalidParams)
+		return
+	}
+
+	form := &types.UpdatePasswordByIDRequest{}
+	err := c.ShouldBindJSON(form)
+	if err != nil {
+		logger.Warn("ShouldBindJSON error: ", logger.Err(err), middleware.GCtxRequestIDField(c))
+		response.Error(c, ecode.InvalidParams)
+		return
+	}
+
+	user := &model.User{}
+	err = copier.Copy(user, form)
+	if err != nil {
+		response.Error(c, ecode.ErrUpdateByIDUser)
+		return
+	}
+
+	user.ID = id
+
+	// 密码替换为加盐哈希
+	pwd, err := password.HashAndSaltPassword(user.Password)
+	if err != nil {
+		logger.Error("bcrypto.HashAndSaltPassword error", logger.Err(err), middleware.CtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+	user.Password = pwd
+
+	ctx := middleware.WrapCtx(c)
+	err = h.iDao.UpdateByID(ctx, user)
+	if err != nil {
+		logger.Error("UpdateByID error", logger.Err(err), logger.Any("form", form), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+
+	response.Success(c)
+
 }
 
 // GetByID get a record by id

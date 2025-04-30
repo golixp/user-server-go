@@ -23,6 +23,11 @@ type UpdateUserByIDRequest struct {
 	Nickname string `json:"nickname" binding:""`
 }
 
+// UpdatePasswordByIDRequest request params
+type UpdatePasswordByIDRequest struct {
+	Password string `json:"password" binding:""`
+}
+
 // UserObjDetail detail
 type UserObjDetail struct {
 	ID uint64 `json:"id,string"` // convert to uint64 id
@@ -46,6 +51,11 @@ type CreateUserReply struct {
 
 // UpdateUserByIDReply only for api docs
 type UpdateUserByIDReply struct {
+	Result
+}
+
+// UpdatePasswordByIDReply only for api docs
+type UpdatePasswordByIDReply struct {
 	Result
 }
 

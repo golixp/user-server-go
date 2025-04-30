@@ -25,11 +25,12 @@ func userRouter(group *gin.RouterGroup, h handler.UserHandler) {
 	// /logout
 	// /password/:id
 
-	g.POST("", h.Create)           // [post] /api/v1/user
-	g.DELETE("/:id", h.DeleteByID) // [delete] /api/v1/user/:id
-	g.PUT("/:id", h.UpdateByID)    // [put] /api/v1/user/:id
-	g.GET("/:id", h.GetByID)       // [get] /api/v1/user/:id
-	g.POST("/list", h.List)        // [post] /api/v1/user/list
+	g.POST("", h.Create)                     // [post] /api/v1/user
+	g.DELETE("/:id", h.DeleteByID)           // [delete] /api/v1/user/:id
+	g.PUT("/:id", h.UpdateByID)              // [put] /api/v1/user/:id
+	g.PUT("/password/:id", h.UpdatePassword) // [put] /api/v1/user/password/:id
+	g.GET("/:id", h.GetByID)                 // [get] /api/v1/user/:id
+	g.POST("/list", h.List)                  // [post] /api/v1/user/list
 
 	g.POST("/delete/ids", h.DeleteByIDs)   // [post] /api/v1/user/delete/ids
 	g.POST("/condition", h.GetByCondition) // [post] /api/v1/user/condition

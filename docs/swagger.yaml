@@ -168,6 +168,22 @@ definitions:
         description: sorted fields, multi-column sorting separated by commas
         type: string
     type: object
+  types.UpdatePasswordByIDReply:
+    properties:
+      code:
+        description: return code
+        type: integer
+      data:
+        description: return data
+      msg:
+        description: return information description
+        type: string
+    type: object
+  types.UpdatePasswordByIDRequest:
+    properties:
+      password:
+        type: string
+    type: object
   types.UpdateUserByIDReply:
     properties:
       code:
@@ -435,6 +451,35 @@ paths:
       security:
       - BearerAuth: []
       summary: list of users by batch id
+      tags:
+      - user
+  /api/v1/user/password/{id}:
+    put:
+      consumes:
+      - application/json
+      description: update password information by id
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: password information
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/types.UpdatePasswordByIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.UpdatePasswordByIDReply'
+      security:
+      - BearerAuth: []
+      summary: update password
       tags:
       - user
 schemes:
