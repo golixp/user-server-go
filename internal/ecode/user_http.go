@@ -22,5 +22,7 @@ var (
 	ErrListByIDsUser      = errcode.NewError(userBaseCode+8, "failed to list by batch ids "+userName)
 	ErrListByLastIDUser   = errcode.NewError(userBaseCode+9, "failed to list by last id "+userName)
 
+	ErrUsernameAlreadyExists = errcode.NewError(userBaseCode+10, userName+" username already exists")
+
 	// error codes are globally unique, adding 1 to the previous error code
 )

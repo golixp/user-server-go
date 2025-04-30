@@ -79,6 +79,20 @@ func (h *userHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// 检查用户名是否重复
+	data, err := h.iDao.GetByUsername(c, user.Username)
+	logger.Info("", logger.Any("data", data))
+	if err != nil && !errors.Is(err, database.ErrRecordNotFound) {
+		logger.Warn("h.checkUsernameExist", logger.Err(err), logger.String("username", user.Username), middleware.CtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+	if data != nil && data.ID > 0 {
+		logger.Warn("username is already in use", middleware.CtxRequestIDField(c))
+		response.Error(c, ecode.ErrUsernameAlreadyExists)
+		return
+	}
+
 	// 赋值 LoginIP/LoginAt
 	user.LoginAt = time.Now()
 	user.LoginIP = c.ClientIP()

@@ -3,7 +3,6 @@ package dao
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"golang.org/x/sync/singleflight"
@@ -61,13 +60,39 @@ func NewUserDao(db *gorm.DB, xCache cache.UserCache) UserDao {
 
 func (d *userDao) deleteCache(ctx context.Context, id uint64) error {
 	if d.cache != nil {
+		data, err := d.GetByID(ctx, id)
+		if err != nil {
+			return err
+		}
+		err = d.deleteCacheByUsername(ctx, data.Username)
+		if err != nil {
+			return err
+		}
+		err = d.deleteCacheById(ctx, id)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (d *userDao) deleteCacheById(ctx context.Context, id uint64) error {
+	if d.cache != nil {
 		return d.cache.Del(ctx, id)
+	}
+	return nil
+}
+
+func (d *userDao) deleteCacheByUsername(ctx context.Context, username string) error {
+	if d.cache != nil {
+		return d.cache.DelByUsername(ctx, username)
 	}
 	return nil
 }
 
 // Create a record, insert the record and the id value is written back to the table
 func (d *userDao) Create(ctx context.Context, table *model.User) error {
+	_ = d.deleteCacheByUsername(ctx, table.Username)
 	return d.db.WithContext(ctx).Create(table).Error
 }
 
@@ -405,22 +430,28 @@ func (d *userDao) UpdateByTx(ctx context.Context, tx *gorm.DB, table *model.User
 
 // GetByUsername get a record by username
 func (d *userDao) GetByUsername(ctx context.Context, username string) (*model.User, error) {
+	// no cache
+	if d.cache == nil {
+		record := &model.User{}
+		err := d.db.WithContext(ctx).Where("username = ?", username).First(record).Error
+		return record, err
+	}
+
+	// get from cache
 	record, err := d.cache.GetByUsername(ctx, username)
 	if err == nil {
 		return record, nil
 	}
 
 	if errors.Is(err, cacheBase.CacheNotFound) {
-		// for the same id, prevent high concurrent simultaneous access to mysql
-		val, err, _ := d.sfg.Do(username, func() (interface{}, error) { // nolint
+		val, err, _ := d.sfg.Do(username, func() (interface{}, error) {
 			table := &model.User{}
 			err = d.db.WithContext(ctx).Where("username = ?", username).First(table).Error
 			if err != nil {
-				// if data is empty, set not found cache to prevent cache penetration, default expiration time 10 minutes
 				if errors.Is(err, database.ErrRecordNotFound) {
 					err = d.cache.SetUsernamePlaceholder(ctx, username)
 					if err != nil {
-						return nil, err
+						logger.Warn("cache.SetUsernamePlaceholder error", logger.Err(err), logger.Any("username", username))
 					}
 					return nil, database.ErrRecordNotFound
 				}
@@ -429,7 +460,7 @@ func (d *userDao) GetByUsername(ctx context.Context, username string) (*model.Us
 			// set cache
 			err = d.cache.SetByUsername(ctx, username, table, 10*time.Minute)
 			if err != nil {
-				return nil, fmt.Errorf("cache.Set error: %v, username=%s", err, username)
+				logger.Warn("cache.SetByUsername error", logger.Err(err), logger.Any("username", username))
 			}
 			return table, nil
 		})
@@ -441,10 +472,11 @@ func (d *userDao) GetByUsername(ctx context.Context, username string) (*model.Us
 			return nil, database.ErrRecordNotFound
 		}
 		return table, nil
-	} else if d.cache.IsPlaceholderErr(err) {
+	}
+
+	if d.cache.IsPlaceholderErr(err) {
 		return nil, database.ErrRecordNotFound
 	}
 
-	// fail fast, if cache error return, don't request to db
 	return nil, err
 }
