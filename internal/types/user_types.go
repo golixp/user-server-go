@@ -17,6 +17,12 @@ type CreateUserRequest struct {
 	Password string `json:"password" binding:""`
 }
 
+// LoginRequest request params
+type LoginRequest struct {
+	Username string `json:"username" binding:""`
+	Password string `json:"password" binding:""`
+}
+
 // UpdateUserByIDRequest request params
 type UpdateUserByIDRequest struct {
 	Username string `json:"username" binding:""`
@@ -40,12 +46,25 @@ type UserObjDetail struct {
 	UpdatedAt *time.Time `json:"updatedAt"`
 }
 
+type TokenObjDetail struct {
+	ID    uint64 `json:"id,string"`
+	Token string `json:"token"`
+}
+
 // CreateUserReply only for api docs
 type CreateUserReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description
 	Data struct {
-		ID uint64 `json:"id"` // id
+		User UserObjDetail `json:"user"`
+	} `json:"data"` // return data
+}
+
+type LoginReply struct {
+	Code int    `json:"code"` // return code
+	Msg  string `json:"msg"`  // return information description
+	Data struct {
+		TokenObjDetail
 	} `json:"data"` // return data
 }
 

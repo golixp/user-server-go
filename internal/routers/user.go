@@ -2,6 +2,7 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/go-dev-frame/sponge/pkg/gin/middleware"
 
 	"user-server-go/internal/handler"
 )
@@ -13,17 +14,18 @@ func init() {
 }
 
 func userRouter(group *gin.RouterGroup, h handler.UserHandler) {
+
+	group.POST("/login", h.Login) // [post] /api/v1/login
+
 	g := group.Group("/user")
 
 	// All the following routes use jwt authentication, you also can use middleware.Auth(middleware.WithExtraVerify(fn))
-	//g.Use(middleware.Auth())
+	g.Use(middleware.Auth(middleware.WithSignKey(handler.JwtSignKey), middleware.WithExtraVerify(h.VerifyToken)))
 
 	// If jwt authentication is not required for all routes, authentication middleware can be added
 	// separately for only certain routes. In this case, g.Use(middleware.Auth()) above should not be used.
 
-	// /login
 	// /logout
-	// /password/:id
 
 	g.POST("", h.Create)                     // [post] /api/v1/user
 	g.DELETE("/:id", h.DeleteByID)           // [delete] /api/v1/user/:id

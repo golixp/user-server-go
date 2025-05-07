@@ -16,6 +16,45 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/login": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "submit information to login",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "login",
+                "parameters": [
+                    {
+                        "description": "login information",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.LoginReply"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/user": {
             "post": {
                 "security": [
@@ -467,9 +506,8 @@ const docTemplate = `{
                     "description": "return data",
                     "type": "object",
                     "properties": {
-                        "id": {
-                            "description": "id",
-                            "type": "integer"
+                        "user": {
+                            "$ref": "#/definitions/types.UserObjDetail"
                         }
                     }
                 },
@@ -641,6 +679,43 @@ const docTemplate = `{
                 },
                 "msg": {
                     "description": "return information description",
+                    "type": "string"
+                }
+            }
+        },
+        "types.LoginReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "return code",
+                    "type": "integer"
+                },
+                "data": {
+                    "description": "return data",
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "string",
+                            "example": "0"
+                        },
+                        "token": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "msg": {
+                    "description": "return information description",
+                    "type": "string"
+                }
+            }
+        },
+        "types.LoginRequest": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }

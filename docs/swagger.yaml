@@ -30,9 +30,8 @@ definitions:
       data:
         description: return data
         properties:
-          id:
-            description: id
-            type: integer
+          user:
+            $ref: '#/definitions/types.UserObjDetail'
         type: object
       msg:
         description: return information description
@@ -151,6 +150,31 @@ definitions:
         description: return information description
         type: string
     type: object
+  types.LoginReply:
+    properties:
+      code:
+        description: return code
+        type: integer
+      data:
+        description: return data
+        properties:
+          id:
+            example: "0"
+            type: string
+          token:
+            type: string
+        type: object
+      msg:
+        description: return information description
+        type: string
+    type: object
+  types.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
   types.Params:
     properties:
       columns:
@@ -228,6 +252,30 @@ info:
   title: user_server_go api docs
   version: "2.0"
 paths:
+  /api/v1/login:
+    post:
+      consumes:
+      - application/json
+      description: submit information to login
+      parameters:
+      - description: login information
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/types.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.LoginReply'
+      security:
+      - BearerAuth: []
+      summary: login
+      tags:
+      - user
   /api/v1/user:
     post:
       consumes:

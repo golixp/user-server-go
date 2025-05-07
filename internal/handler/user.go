@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"math"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -10,6 +12,7 @@ import (
 
 	"github.com/go-dev-frame/sponge/pkg/gin/middleware"
 	"github.com/go-dev-frame/sponge/pkg/gin/response"
+	"github.com/go-dev-frame/sponge/pkg/jwt"
 	"github.com/go-dev-frame/sponge/pkg/logger"
 	"github.com/go-dev-frame/sponge/pkg/utils"
 
@@ -25,6 +28,8 @@ import (
 
 var _ UserHandler = (*userHandler)(nil)
 
+var JwtSignKey = []byte("a-string-secret-at-least-256-bits-long")
+
 // UserHandler defining the handler interface
 type UserHandler interface {
 	Create(c *gin.Context)
@@ -34,14 +39,19 @@ type UserHandler interface {
 	GetByID(c *gin.Context)
 	List(c *gin.Context)
 
+	Login(c *gin.Context)
+
 	DeleteByIDs(c *gin.Context)
 	GetByCondition(c *gin.Context)
 	ListByIDs(c *gin.Context)
 	ListByLastID(c *gin.Context)
+
+	VerifyToken(claims *jwt.Claims, c *gin.Context) error
 }
 
 type userHandler struct {
-	iDao dao.UserDao
+	iDao       dao.UserDao
+	TokenCache cache.UserTokenCache
 }
 
 // NewUserHandler creating the handler interface
@@ -51,6 +61,7 @@ func NewUserHandler() UserHandler {
 			database.GetDB(), // db driver is sqlite
 			cache.NewUserCache(database.GetCacheType()),
 		),
+		TokenCache: cache.NewUserTokenCache(database.GetCacheType()),
 	}
 }
 
@@ -82,7 +93,6 @@ func (h *userHandler) Create(c *gin.Context) {
 
 	// 检查用户名是否重复
 	data, err := h.iDao.GetByUsername(c, user.Username)
-	logger.Info("", logger.Any("data", data))
 	if err != nil && !errors.Is(err, database.ErrRecordNotFound) {
 		logger.Warn("h.checkUsernameExist", logger.Err(err), logger.String("username", user.Username), middleware.CtxRequestIDField(c))
 		response.Output(c, ecode.InternalServerError.ToHTTPCode())
@@ -122,6 +132,78 @@ func (h *userHandler) Create(c *gin.Context) {
 		return
 	}
 	response.Success(c, gin.H{"user": resp})
+}
+
+// 登录
+// @Summary login
+// @Description submit information to login
+// @Tags user
+// @accept json
+// @Produce json
+// @Param data body types.LoginRequest true "login information"
+// @Success 200 {object} types.LoginReply{}
+// @Router /api/v1/login [post]
+// @Security BearerAuth
+func (h *userHandler) Login(c *gin.Context) {
+	form := &types.LoginRequest{}
+	err := c.ShouldBindJSON(form)
+	if err != nil {
+		logger.Warn("ShouldBindJSON error: ", logger.Err(err), middleware.GCtxRequestIDField(c))
+		response.Error(c, ecode.InvalidParams)
+		return
+	}
+
+	// 搜索用户
+	user, err := h.iDao.GetByUsername(c, form.Username)
+	if err != nil {
+		if errors.Is(err, database.ErrRecordNotFound) {
+			response.Error(c, ecode.ErrUserNotExists)
+		} else {
+			logger.Warn("login GetByUsername error", logger.Err(err), logger.String("username", form.Username), middleware.CtxRequestIDField(c))
+			response.Output(c, ecode.InternalServerError.ToHTTPCode())
+			return
+		}
+	}
+
+	// 验证密码
+	if !password.VerifyPassword(form.Password, user.Password) {
+		response.Error(c, ecode.ErrPassword)
+		return
+	}
+
+	// 生成 JWT Token
+	_, token, err := jwt.GenerateToken(strconv.FormatUint(user.ID, 10), jwt.WithGenerateTokenSignKey(JwtSignKey))
+	if err != nil {
+		logger.Error("jwt.GenerateToken error", logger.Err(err), middleware.CtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+
+	// 缓存Token
+	err = h.TokenCache.Set(c, user.ID, token, cache.UserTokenExpireTime)
+	if err != nil {
+		logger.Error("h.userTokenCache.Set error", logger.Err(err), middleware.CtxRequestIDField(c))
+		return
+	}
+
+	// 更新登录相关状态
+	userInfo := &model.User{
+		LoginAt: time.Now(),
+		LoginIP: c.ClientIP(),
+	}
+	userInfo.ID = user.ID
+	err = h.iDao.UpdateByID(c, userInfo)
+	if err != nil {
+		logger.Warn("h.iDao.UpdateByID error", logger.Err(err), logger.Any("user", userInfo), middleware.CtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+
+	resp := &types.TokenObjDetail{
+		ID:    user.ID,
+		Token: token,
+	}
+	response.Success(c, resp)
 }
 
 // DeleteByID delete a record by id
@@ -190,7 +272,6 @@ func (h *userHandler) UpdateByID(c *gin.Context) {
 	if user.Username != "" {
 		// 检查用户名是否重复
 		data, err := h.iDao.GetByUsername(c, user.Username)
-		logger.Info("", logger.Any("data", data))
 		if err != nil && !errors.Is(err, database.ErrRecordNotFound) {
 			logger.Warn("h.checkUsernameExist", logger.Err(err), logger.String("username", user.Username), middleware.CtxRequestIDField(c))
 			response.Output(c, ecode.InternalServerError.ToHTTPCode())
@@ -548,4 +629,42 @@ func convertUsers(fromValues []*model.User) ([]*types.UserObjDetail, error) {
 	}
 
 	return toValues, nil
+}
+
+// CheckLoginToken 判断用户是否登录
+func (h *userHandler) checkLoginToken(c context.Context, id uint64) (string, error) {
+	token, err := h.TokenCache.Get(c, id)
+	if err != nil {
+		logger.Warn("get token error", logger.Err(err))
+		return "", ecode.InternalServerError.Err()
+	}
+
+	if token == "" {
+		return "", ecode.ErrNotLogin.Err()
+	}
+
+	return token, nil
+}
+
+func (h *userHandler) VerifyToken(claims *jwt.Claims, c *gin.Context) error {
+	uid, err := strconv.ParseUint(claims.UID, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	token, err := h.checkLoginToken(c, uid)
+	if err != nil {
+		return err
+	}
+
+	cacheClaims, err := jwt.ValidateToken(token, jwt.WithValidateTokenSignKey(JwtSignKey))
+	if err != nil {
+		return err
+	}
+
+	if cacheClaims.UID != claims.UID {
+		return ecode.Unauthorized.Err()
+	}
+
+	return nil
 }
