@@ -23,6 +23,10 @@ type LoginRequest struct {
 	Password string `json:"password" binding:""`
 }
 
+// LoginRequest request params
+type LogoutRequest struct {
+}
+
 // UpdateUserByIDRequest request params
 type UpdateUserByIDRequest struct {
 	Username string `json:"username" binding:""`
@@ -66,6 +70,10 @@ type LoginReply struct {
 	Data struct {
 		TokenObjDetail
 	} `json:"data"` // return data
+}
+
+type LogoutReply struct {
+	Result
 }
 
 // UpdateUserByIDReply only for api docs

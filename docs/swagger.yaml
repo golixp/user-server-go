@@ -175,6 +175,19 @@ definitions:
       username:
         type: string
     type: object
+  types.LogoutReply:
+    properties:
+      code:
+        description: return code
+        type: integer
+      data:
+        description: return data
+      msg:
+        description: return information description
+        type: string
+    type: object
+  types.LogoutRequest:
+    type: object
   types.Params:
     properties:
       columns:
@@ -274,6 +287,30 @@ paths:
       security:
       - BearerAuth: []
       summary: login
+      tags:
+      - user
+  /api/v1/logout:
+    post:
+      consumes:
+      - application/json
+      description: submit information to logout
+      parameters:
+      - description: logout information
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/types.LogoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.LogoutReply'
+      security:
+      - BearerAuth: []
+      summary: logout
       tags:
       - user
   /api/v1/user:

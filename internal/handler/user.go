@@ -40,6 +40,7 @@ type UserHandler interface {
 	List(c *gin.Context)
 
 	Login(c *gin.Context)
+	Logout(c *gin.Context)
 
 	DeleteByIDs(c *gin.Context)
 	GetByCondition(c *gin.Context)
@@ -183,6 +184,7 @@ func (h *userHandler) Login(c *gin.Context) {
 	err = h.TokenCache.Set(c, user.ID, token, cache.UserTokenExpireTime)
 	if err != nil {
 		logger.Error("h.userTokenCache.Set error", logger.Err(err), middleware.CtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
 		return
 	}
 
@@ -204,6 +206,77 @@ func (h *userHandler) Login(c *gin.Context) {
 		Token: token,
 	}
 	response.Success(c, resp)
+}
+
+// 退出登录
+// @Summary logout
+// @Description submit information to logout
+// @Tags user
+// @accept json
+// @Produce json
+// @Param data body types.LogoutRequest true "logout information"
+// @Success 200 {object} types.LogoutReply{}
+// @Router /api/v1/logout [post]
+// @Security BearerAuth
+func (h *userHandler) Logout(c *gin.Context) {
+	form := &types.LogoutRequest{}
+	err := c.ShouldBindJSON(form)
+	if err != nil {
+		logger.Warn("ShouldBindJSON error: ", logger.Err(err), middleware.GCtxRequestIDField(c))
+		response.Error(c, ecode.InvalidParams)
+		return
+	}
+
+	// 获取 gin.Context 中的Token信息
+	claims, ok := middleware.GetClaims(c)
+	if !ok {
+		logger.Error("GetClaims error", middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+
+	// 获取 user id
+	uid, err := strconv.ParseUint(claims.UID, 10, 64)
+	if err != nil {
+		logger.Error("strconv error", logger.String("uid", claims.UID), logger.Err(err), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+
+	// 获取缓存中的 Token
+	cacheToken, err := h.getLoginToken(c, uid)
+	if errors.Is(err, ecode.ErrNotLogin.Err()) {
+		response.Error(c, ecode.ErrNotLogin)
+		return
+	}
+	if err != nil {
+		logger.Error("checkLogin error", logger.Err(err), middleware.CtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+
+	// 检查ID一致性
+	cacheClaims, err := jwt.ValidateToken(cacheToken, jwt.WithValidateTokenSignKey(JwtSignKey))
+	if err != nil {
+		logger.Error("ValidateToken error", logger.String("token", cacheToken), logger.Err(err), middleware.CtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+	if claims.UID != cacheClaims.UID {
+		response.Error(c, ecode.ErrNotLogin)
+		return
+	}
+
+	// 删除缓存
+	err = h.TokenCache.Del(c, uid)
+	if err != nil {
+		logger.Error("TokenCache.Del error", logger.Uint64("uid", uid), logger.Err(err), middleware.CtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+
+	response.Success(c)
+
 }
 
 // DeleteByID delete a record by id
@@ -631,8 +704,8 @@ func convertUsers(fromValues []*model.User) ([]*types.UserObjDetail, error) {
 	return toValues, nil
 }
 
-// CheckLoginToken 判断用户是否登录
-func (h *userHandler) checkLoginToken(c context.Context, id uint64) (string, error) {
+// CheckLoginToken 获取指定登录用户缓存的Token
+func (h *userHandler) getLoginToken(c context.Context, id uint64) (string, error) {
 	token, err := h.TokenCache.Get(c, id)
 	if err != nil {
 		logger.Warn("get token error", logger.Err(err))
@@ -652,7 +725,7 @@ func (h *userHandler) VerifyToken(claims *jwt.Claims, c *gin.Context) error {
 		return err
 	}
 
-	token, err := h.checkLoginToken(c, uid)
+	token, err := h.getLoginToken(c, uid)
 	if err != nil {
 		return err
 	}
