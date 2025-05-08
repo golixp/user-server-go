@@ -90,6 +90,7 @@ type App struct {
 	RegistryDiscoveryType string  `yaml:"registryDiscoveryType" json:"registryDiscoveryType"`
 	TracingSamplingRate   float64 `yaml:"tracingSamplingRate" json:"tracingSamplingRate"`
 	Version               string  `yaml:"version" json:"version"`
+	JwtSignKey            string  `yaml:"jwtSignKey" json:"jwtSignKey"`
 }
 
 type GrpcClient struct {

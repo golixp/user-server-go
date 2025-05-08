@@ -14,6 +14,7 @@ import (
 	"user-server-go/configs"
 	"user-server-go/internal/config"
 	"user-server-go/internal/database"
+	"user-server-go/internal/token"
 )
 
 var (
@@ -24,6 +25,10 @@ var (
 // InitApp initial app configuration
 func InitApp() {
 	initConfig()
+
+	// 初始化 token 相关
+	token.Init()
+
 	cfg := config.Get()
 
 	// initializing log

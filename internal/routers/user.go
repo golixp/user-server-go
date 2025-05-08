@@ -2,9 +2,9 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/go-dev-frame/sponge/pkg/gin/middleware"
 
 	"user-server-go/internal/handler"
+	"user-server-go/internal/token"
 )
 
 func init() {
@@ -15,7 +15,7 @@ func init() {
 
 func userRouter(group *gin.RouterGroup, h handler.UserHandler) {
 
-	verify := middleware.Auth(middleware.WithSignKey(handler.JwtSignKey), middleware.WithExtraVerify(h.VerifyToken))
+	verify := token.GetVerifyHandlerFunc()
 
 	group.POST("/login", h.Login)           // [post] /api/v1/login
 	group.POST("/logout", verify, h.Logout) // [post] /api/v1/logout

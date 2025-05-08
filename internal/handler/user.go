@@ -23,12 +23,11 @@ import (
 	"user-server-go/internal/database"
 	"user-server-go/internal/ecode"
 	"user-server-go/internal/model"
+	"user-server-go/internal/token"
 	"user-server-go/internal/types"
 )
 
 var _ UserHandler = (*userHandler)(nil)
-
-var JwtSignKey = []byte("a-string-secret-at-least-256-bits-long")
 
 // UserHandler defining the handler interface
 type UserHandler interface {
@@ -46,8 +45,6 @@ type UserHandler interface {
 	GetByCondition(c *gin.Context)
 	ListByIDs(c *gin.Context)
 	ListByLastID(c *gin.Context)
-
-	VerifyToken(claims *jwt.Claims, c *gin.Context) error
 }
 
 type userHandler struct {
@@ -172,7 +169,7 @@ func (h *userHandler) Login(c *gin.Context) {
 	}
 
 	// 生成 JWT Token
-	_, token, err := jwt.GenerateToken(strconv.FormatUint(user.ID, 10), jwt.WithGenerateTokenSignKey(JwtSignKey))
+	_, token, err := jwt.GenerateToken(strconv.FormatUint(user.ID, 10), jwt.WithGenerateTokenSignKey(token.GetJwtSignKey()))
 	if err != nil {
 		logger.Error("jwt.GenerateToken error", logger.Err(err), middleware.CtxRequestIDField(c))
 		response.Output(c, ecode.InternalServerError.ToHTTPCode())
@@ -255,7 +252,7 @@ func (h *userHandler) Logout(c *gin.Context) {
 	}
 
 	// 检查ID一致性
-	cacheClaims, err := jwt.ValidateToken(cacheToken, jwt.WithValidateTokenSignKey(JwtSignKey))
+	cacheClaims, err := jwt.ValidateToken(cacheToken, jwt.WithValidateTokenSignKey(token.GetJwtSignKey()))
 	if err != nil {
 		logger.Error("ValidateToken error", logger.String("token", cacheToken), logger.Err(err), middleware.CtxRequestIDField(c))
 		response.Output(c, ecode.InternalServerError.ToHTTPCode())
@@ -716,27 +713,4 @@ func (h *userHandler) getLoginToken(c context.Context, id uint64) (string, error
 	}
 
 	return token, nil
-}
-
-func (h *userHandler) VerifyToken(claims *jwt.Claims, c *gin.Context) error {
-	uid, err := strconv.ParseUint(claims.UID, 10, 64)
-	if err != nil {
-		return err
-	}
-
-	token, err := h.getLoginToken(c, uid)
-	if err != nil {
-		return err
-	}
-
-	cacheClaims, err := jwt.ValidateToken(token, jwt.WithValidateTokenSignKey(JwtSignKey))
-	if err != nil {
-		return err
-	}
-
-	if cacheClaims.UID != claims.UID {
-		return ecode.Unauthorized.Err()
-	}
-
-	return nil
 }

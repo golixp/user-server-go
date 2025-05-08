@@ -13,3 +13,17 @@
 地址: http://127.0.0.1:8080/swagger/index.html
 
 更新命令: `make docs`
+
+
+## TODO
+
+功能:
+
+- 增加基于casbin权限认证逻辑
+- 自动续签token
+
+优化:
+
+- 拆分独立的认证模块
+- 配置读取 jwt key
+- 独立 Login 模块
