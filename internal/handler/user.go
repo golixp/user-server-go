@@ -89,8 +89,11 @@ func (h *userHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// 生成 context.Context
+	ctx := middleware.WrapCtx(c)
+
 	// 检查用户名是否重复
-	data, err := h.iDao.GetByUsername(c, user.Username)
+	data, err := h.iDao.GetByUsername(ctx, user.Username)
 	if err != nil && !errors.Is(err, database.ErrRecordNotFound) {
 		logger.Warn("h.checkUsernameExist", logger.Err(err), logger.String("username", user.Username), middleware.CtxRequestIDField(c))
 		response.Output(c, ecode.InternalServerError.ToHTTPCode())
@@ -115,7 +118,7 @@ func (h *userHandler) Create(c *gin.Context) {
 	}
 	user.Password = pwd
 
-	err = h.iDao.Create(c, user)
+	err = h.iDao.Create(ctx, user)
 	if err != nil {
 		logger.Error("Create error", logger.Err(err), logger.Any("form", form), middleware.GCtxRequestIDField(c))
 		response.Output(c, ecode.InternalServerError.ToHTTPCode())
@@ -150,8 +153,11 @@ func (h *userHandler) Login(c *gin.Context) {
 		return
 	}
 
+	// 生成 context.Context
+	ctx := middleware.WrapCtx(c)
+
 	// 搜索用户
-	user, err := h.iDao.GetByUsername(c, form.Username)
+	user, err := h.iDao.GetByUsername(ctx, form.Username)
 	if err != nil {
 		if errors.Is(err, database.ErrRecordNotFound) {
 			response.Error(c, ecode.ErrUserNotExists)
@@ -190,7 +196,7 @@ func (h *userHandler) Login(c *gin.Context) {
 		LoginIP: c.ClientIP(),
 	}
 	userInfo.ID = user.ID
-	err = h.iDao.UpdateByID(c, userInfo)
+	err = h.iDao.UpdateByID(ctx, userInfo)
 	if err != nil {
 		logger.Warn("h.iDao.UpdateByID error", logger.Err(err), logger.Any("user", userInfo), middleware.CtxRequestIDField(c))
 		response.Output(c, ecode.InternalServerError.ToHTTPCode())
@@ -338,9 +344,12 @@ func (h *userHandler) UpdateByID(c *gin.Context) {
 
 	user.ID = id
 
+	// 生成 context.Context
+	ctx := middleware.WrapCtx(c)
+
 	if user.Username != "" {
 		// 检查用户名是否重复
-		data, err := h.iDao.GetByUsername(c, user.Username)
+		data, err := h.iDao.GetByUsername(ctx, user.Username)
 		if err != nil && !errors.Is(err, database.ErrRecordNotFound) {
 			logger.Warn("h.checkUsernameExist", logger.Err(err), logger.String("username", user.Username), middleware.CtxRequestIDField(c))
 			response.Output(c, ecode.InternalServerError.ToHTTPCode())
@@ -353,7 +362,6 @@ func (h *userHandler) UpdateByID(c *gin.Context) {
 		}
 	}
 
-	ctx := middleware.WrapCtx(c)
 	err = h.iDao.UpdateByID(ctx, user)
 	if err != nil {
 		logger.Error("UpdateByID error", logger.Err(err), logger.Any("form", form), middleware.GCtxRequestIDField(c))
