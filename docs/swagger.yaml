@@ -288,7 +288,7 @@ paths:
       - BearerAuth: []
       summary: login
       tags:
-      - user
+      - login
   /api/v1/logout:
     post:
       consumes:
@@ -312,7 +312,7 @@ paths:
       - BearerAuth: []
       summary: logout
       tags:
-      - user
+      - login
   /api/v1/user:
     post:
       consumes:

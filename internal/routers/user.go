@@ -15,15 +15,10 @@ func init() {
 
 func userRouter(group *gin.RouterGroup, h handler.UserHandler) {
 
-	verify := token.GetVerifyHandlerFunc()
-
-	group.POST("/login", h.Login)           // [post] /api/v1/login
-	group.POST("/logout", verify, h.Logout) // [post] /api/v1/logout
-
 	g := group.Group("/user")
 
 	// All the following routes use jwt authentication, you also can use middleware.Auth(middleware.WithExtraVerify(fn))
-	g.Use(verify)
+	g.Use(token.GetVerifyHandlerFunc())
 
 	// If jwt authentication is not required for all routes, authentication middleware can be added
 	// separately for only certain routes. In this case, g.Use(middleware.Auth()) above should not be used.

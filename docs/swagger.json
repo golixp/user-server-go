@@ -27,7 +27,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "user"
+                    "login"
                 ],
                 "summary": "login",
                 "parameters": [
@@ -66,7 +66,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "user"
+                    "login"
                 ],
                 "summary": "logout",
                 "parameters": [

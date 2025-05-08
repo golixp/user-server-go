@@ -31,7 +31,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "user"
+                    "login"
                 ],
                 "summary": "login",
                 "parameters": [
@@ -70,7 +70,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "user"
+                    "login"
                 ],
                 "summary": "logout",
                 "parameters": [
