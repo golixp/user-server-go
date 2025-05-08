@@ -118,8 +118,7 @@ func (h *userHandler) Create(c *gin.Context) {
 	}
 	user.Password = pwd
 
-	ctx := middleware.WrapCtx(c)
-	err = h.iDao.Create(ctx, user)
+	err = h.iDao.Create(c, user)
 	if err != nil {
 		logger.Error("Create error", logger.Err(err), logger.Any("form", form), middleware.GCtxRequestIDField(c))
 		response.Output(c, ecode.InternalServerError.ToHTTPCode())

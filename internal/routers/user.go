@@ -28,8 +28,6 @@ func userRouter(group *gin.RouterGroup, h handler.UserHandler) {
 	// If jwt authentication is not required for all routes, authentication middleware can be added
 	// separately for only certain routes. In this case, g.Use(middleware.Auth()) above should not be used.
 
-	// /logout
-
 	g.POST("", h.Create)                     // [post] /api/v1/user
 	g.DELETE("/:id", h.DeleteByID)           // [delete] /api/v1/user/:id
 	g.PUT("/:id", h.UpdateByID)              // [put] /api/v1/user/:id
