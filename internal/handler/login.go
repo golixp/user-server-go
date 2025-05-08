@@ -31,7 +31,7 @@ type LoginHandler interface {
 
 type loginHandler struct {
 	iDao       dao.UserDao
-	TokenCache cache.UserTokenCache
+	tokenCache cache.UserTokenCache
 }
 
 // NewLoginHandler creating the handler interface
@@ -41,7 +41,7 @@ func NewLoginHandler() LoginHandler {
 			database.GetDB(), // db driver is sqlite
 			cache.NewUserCache(database.GetCacheType()),
 		),
-		TokenCache: cache.NewUserTokenCache(database.GetCacheType()),
+		tokenCache: cache.NewUserTokenCache(database.GetCacheType()),
 	}
 }
 
@@ -94,7 +94,7 @@ func (h *loginHandler) Login(c *gin.Context) {
 	}
 
 	// 缓存Token
-	err = h.TokenCache.Set(c, user.ID, token, cache.UserTokenExpireTime)
+	err = h.tokenCache.Set(c, user.ID, token, cache.UserTokenExpireTime)
 	if err != nil {
 		logger.Error("h.userTokenCache.Set error", logger.Err(err), middleware.CtxRequestIDField(c))
 		response.Output(c, ecode.InternalServerError.ToHTTPCode())
@@ -181,7 +181,7 @@ func (h *loginHandler) Logout(c *gin.Context) {
 	}
 
 	// 删除缓存
-	err = h.TokenCache.Del(c, uid)
+	err = h.tokenCache.Del(c, uid)
 	if err != nil {
 		logger.Error("TokenCache.Del error", logger.Uint64("uid", uid), logger.Err(err), middleware.CtxRequestIDField(c))
 		response.Output(c, ecode.InternalServerError.ToHTTPCode())
@@ -194,7 +194,7 @@ func (h *loginHandler) Logout(c *gin.Context) {
 
 // CheckLoginToken 获取指定登录用户缓存的Token
 func (h *loginHandler) getLoginToken(c context.Context, id uint64) (string, error) {
-	token, err := h.TokenCache.Get(c, id)
+	token, err := h.tokenCache.Get(c, id)
 	if err != nil {
 		logger.Warn("get token error", logger.Err(err))
 		return "", ecode.InternalServerError.Err()
