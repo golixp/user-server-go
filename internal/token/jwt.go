@@ -58,8 +58,8 @@ func GenerateJwtToken(claims Claims) (string, error) {
 	return tokenString, nil
 }
 
-// ParseJWTToken 解析并验证JWT令牌。
-func ParseJWTToken(tokenString string) (*Claims, error) {
+// ParseJwtToken 解析并验证JWT令牌。
+func ParseJwtToken(tokenString string) (*Claims, error) {
 
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
