@@ -35,6 +35,19 @@ func (c *Claims) SetExpAndIat(expDuration time.Duration) {
 	c.ExpiresAt = jwt.NewNumericDate(exp)
 }
 
+// GenerateJWTToken 生成一个新的JWT令牌。
+func (c *Claims) GenerateJwtToken() (string, error) {
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, c)
+
+	tokenString, err := token.SignedString(GetJwtSignKey())
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
+}
+
 // NewClaimsWithUidAndExp 根据用户ID和过期时间生成Claims
 func NewClaimsWithUidAndExp(uid uint64, expDuration time.Duration) *Claims {
 	claims := &Claims{
@@ -43,19 +56,6 @@ func NewClaimsWithUidAndExp(uid uint64, expDuration time.Duration) *Claims {
 	claims.SetExpAndIat(expDuration)
 
 	return claims
-}
-
-// GenerateJWTToken 生成一个新的JWT令牌。
-func GenerateJwtToken(claims Claims) (string, error) {
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	tokenString, err := token.SignedString(GetJwtSignKey())
-	if err != nil {
-		return "", err
-	}
-
-	return tokenString, nil
 }
 
 // ParseJwtToken 解析并验证JWT令牌。

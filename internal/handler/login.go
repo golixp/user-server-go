@@ -86,9 +86,10 @@ func (h *loginHandler) Login(c *gin.Context) {
 	}
 
 	// 生成 JWT Token
-	_, token, err := jwt.GenerateToken(strconv.FormatUint(user.ID, 10), jwt.WithGenerateTokenSignKey(token.GetJwtSignKey()))
+	claims := token.NewClaimsWithUidAndExp(user.ID, cache.UserTokenExpireTime)
+	token, err := claims.GenerateJwtToken()
 	if err != nil {
-		logger.Error("jwt.GenerateToken error", logger.Err(err), middleware.CtxRequestIDField(c))
+		logger.Error("GenerateToken error", logger.Err(err), middleware.CtxRequestIDField(c))
 		response.Output(c, ecode.InternalServerError.ToHTTPCode())
 		return
 	}
