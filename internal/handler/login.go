@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"errors"
-	"strconv"
 	"time"
 	"user-server-go/internal/cache"
 	"user-server-go/internal/dao"
@@ -17,7 +16,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-dev-frame/sponge/pkg/gin/middleware"
 	"github.com/go-dev-frame/sponge/pkg/gin/response"
-	"github.com/go-dev-frame/sponge/pkg/jwt"
 	"github.com/go-dev-frame/sponge/pkg/logger"
 )
 
@@ -141,24 +139,24 @@ func (h *loginHandler) Logout(c *gin.Context) {
 		return
 	}
 
-	// 获取 gin.Context 中的Token信息
-	claims, ok := middleware.GetClaims(c)
+	// 获取 gin.Context 中的 claims 信息
+	claims, ok := token.GetClaimsFromCtx(c)
 	if !ok {
 		logger.Error("GetClaims error", middleware.GCtxRequestIDField(c))
 		response.Output(c, ecode.InternalServerError.ToHTTPCode())
 		return
 	}
 
-	// 获取 user id
-	uid, err := strconv.ParseUint(claims.UID, 10, 64)
-	if err != nil {
-		logger.Error("strconv error", logger.String("uid", claims.UID), logger.Err(err), middleware.GCtxRequestIDField(c))
+	// 获取 gin.Context 中的 claims 信息
+	tokenString, ok := token.GetTokenFromCtx(c)
+	if !ok {
+		logger.Error("GetToken error", middleware.GCtxRequestIDField(c))
 		response.Output(c, ecode.InternalServerError.ToHTTPCode())
 		return
 	}
 
 	// 获取缓存中的 Token
-	cacheToken, err := h.getLoginToken(c, uid)
+	cacheToken, err := h.getLoginToken(c, claims.UserID)
 	if errors.Is(err, ecode.ErrNotLogin.Err()) {
 		response.Error(c, ecode.ErrNotLogin)
 		return
@@ -169,22 +167,16 @@ func (h *loginHandler) Logout(c *gin.Context) {
 		return
 	}
 
-	// 检查ID一致性
-	cacheClaims, err := jwt.ValidateToken(cacheToken, jwt.WithValidateTokenSignKey(token.GetJwtSignKey()))
-	if err != nil {
-		logger.Error("ValidateToken error", logger.String("token", cacheToken), logger.Err(err), middleware.CtxRequestIDField(c))
-		response.Output(c, ecode.InternalServerError.ToHTTPCode())
-		return
-	}
-	if claims.UID != cacheClaims.UID {
+	// 检查 token 一致性
+	if cacheToken != tokenString {
 		response.Error(c, ecode.ErrNotLogin)
 		return
 	}
 
 	// 删除缓存
-	err = h.tokenCache.Del(c, uid)
+	err = h.tokenCache.Del(c, claims.UserID)
 	if err != nil {
-		logger.Error("TokenCache.Del error", logger.Uint64("uid", uid), logger.Err(err), middleware.CtxRequestIDField(c))
+		logger.Error("TokenCache.Del error", logger.Uint64("userID", claims.UserID), logger.Err(err), middleware.CtxRequestIDField(c))
 		response.Output(c, ecode.InternalServerError.ToHTTPCode())
 		return
 	}
