@@ -3,6 +3,7 @@ package token
 import (
 	"fmt"
 	"time"
+	"user-server-go/internal/cache"
 	"user-server-go/internal/config"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -48,11 +49,12 @@ func (c *Claims) GenerateJwtToken() (string, error) {
 	return tokenString, nil
 }
 
-// NewClaimsWithUidAndExp 根据用户ID和过期时间生成Claims
-func NewClaimsWithUidAndExp(uid uint64, expDuration time.Duration) *Claims {
+// NewClaims 根据用户ID和过期时间生成Claims
+func NewClaims(uid uint64) *Claims {
 	claims := &Claims{
 		UserID: uid,
 	}
+	expDuration := cache.UserTokenExpireTime
 	claims.SetExpAndIat(expDuration)
 
 	return claims

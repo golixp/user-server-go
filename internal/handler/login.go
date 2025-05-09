@@ -84,7 +84,7 @@ func (h *loginHandler) Login(c *gin.Context) {
 	}
 
 	// 生成 JWT Token
-	claims := token.NewClaimsWithUidAndExp(user.ID, cache.UserTokenExpireTime)
+	claims := token.NewClaims(user.ID)
 	token, err := claims.GenerateJwtToken()
 	if err != nil {
 		logger.Error("GenerateToken error", logger.Err(err), middleware.CtxRequestIDField(c))

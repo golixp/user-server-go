@@ -16,7 +16,7 @@ func initTokenCacheConnect() {
 }
 
 // Token校验逻辑
-func VerifyToken(c *gin.Context, tokenString string, claims *Claims) error {
+func verifyToken(c *gin.Context, tokenString string, claims *Claims) error {
 	if tokenCache == nil {
 		panic("tokenCache is nil, please call token.Init() first")
 	}
