@@ -29,7 +29,7 @@ func InitDB() {
 		gdb = InitSqlite()
 	default:
 		panic("InitDB error, please modify the correct 'database' configuration at yaml file. " +
-			"Refer to https://user-server-go/blob/main/configs/user_server_go.yml#L85")
+			"Refer to https://github.com/golixp/user-server-go/blob/main/configs/user_server_go.yml#L41")
 	}
 }
 
