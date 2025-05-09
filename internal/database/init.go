@@ -21,6 +21,10 @@ var (
 func InitDB() {
 	dbDriver := config.Get().Database.Driver
 	switch strings.ToLower(dbDriver) {
+	case sgorm.DBDriverMysql, sgorm.DBDriverTidb:
+		gdb = InitMysql()
+	case sgorm.DBDriverPostgresql:
+		gdb = InitPostgresql()
 	case sgorm.DBDriverSqlite:
 		gdb = InitSqlite()
 	default:
