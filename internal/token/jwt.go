@@ -14,7 +14,7 @@ func initJwtSignKey() {
 	jwtSignKey = []byte(config.Get().App.JwtSignKey)
 }
 
-func GetJwtSignKey() []byte {
+func getJwtSignKey() []byte {
 	if jwtSignKey == nil {
 		panic("jwtKey not initialized")
 	}
@@ -40,7 +40,7 @@ func (c *Claims) GenerateJwtToken() (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, c)
 
-	tokenString, err := token.SignedString(GetJwtSignKey())
+	tokenString, err := token.SignedString(getJwtSignKey())
 	if err != nil {
 		return "", err
 	}
@@ -65,7 +65,7 @@ func ParseJwtToken(tokenString string) (*Claims, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return GetJwtSignKey(), nil
+		return getJwtSignKey(), nil
 	})
 
 	if err != nil {
